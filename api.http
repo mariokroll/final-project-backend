@@ -1,0 +1,223 @@
+
+"""
+
+Se recomiendo vaciar la base de datos, de cara a que no salten errores cuando no deban 
+y se pueda visualizar mejor tanto el buen funcionamiento como el control de errores
+
+
+"""
+### Registro Usuario CORRECTO 
+
+POST http://localhost:8000/api/users/
+Content-Type: application/json
+
+{
+    "nombre" : "usuario_prueba",
+    "tel" : "1234567890",
+    "email" : "anto1901@gmail.com",
+    "password" : "Antonio123"
+}
+
+### Registro Usuario INCORRECTO
+
+POST http://localhost:8000/api/users/
+Content-Type: application/json
+
+{
+    "nombre" : "usuario_prueba",
+    "tel" : "1234567890",
+    "email" : "nico1901@gmail.com",
+    "password": "antonio123"
+}
+
+### Perfil antes de login 
+# Si tratamos de acceder al perfil sin haber hecho login, nos saltará un error 401 Unauthorized
+# Lo mismo ocurrirá si tratamos de realizar actualización de perfil, logout o baja sin haber hecho login
+
+GET http://localhost:8000/api/users/me/
+Cookie: session=sessiondistinta 
+
+
+### LOGIN 
+POST http://localhost:8000/api/users/login/
+Content-Type: application/json
+
+{
+    "email" : "anto1901@gmail.com",
+    "password" : "Antonio123"
+}
+
+### Perfil
+
+GET http://localhost:8000/api/users/me/
+Cookie:session=108941064392edf94d13459dc6d38a3030f58d71
+
+### Actualización perfil
+
+
+PUT http://localhost:8000/api/users/me/
+Content-Type: application/json
+Cookie:session=108941064392edf94d13459dc6d38a3030f58d71
+
+{
+    "nombre" : "usuario_prueba",
+    "tel" : "123456789011",
+    "email" : "anto1901@gmail.com",
+    "password" : "Antonio123"
+}
+### Actucalización perfil con PATCH 
+PATCH http://localhost:8000/api/users/me/
+Content-Type: application/json
+Cookie:session=108941064392edf94d13459dc6d38a3030f58d71
+
+{
+    "email": "usuario_prueba_modificado@example.com"
+}
+
+### Logout
+
+DELETE http://localhost:8000/api/users/logout/
+Cookie: session=108941064392edf94d13459dc6d38a3030f58d71
+
+### Baja
+
+DELETE http://localhost:8000/api/users/me/
+Cookie: session=108941064392edf94d13459dc6d38a3030f58d71
+
+# para esta parte se recomienda vaciar la database, para la mejor visualización de los errores
+### REGISTRO PELICULA CORRECTO 
+
+POST http://localhost:8000/movies/
+Content-Type: application/json
+
+
+{
+    "title": "The Godfather",
+    "year": 1972,
+    "director": "Francis Ford Coppola",
+    "duration": 175,
+    "genre": "Crime",
+    "description": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+    "genre": 1
+}
+
+###  REGISTRO PELICULA INCORRECTPO : 
+# Si la duracion de la pelicula no es año comprendido entre 1900-2024, se devuelve un error 400 Bad Request
+
+POST http://localhost:8000/movies/
+Content-Type: application/json
+
+{
+    "title": "The Godfather 10",
+    "year": -1972,
+    "director": "Francis Ford Coppola",
+    "genre": "Crime",
+    "description": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+    "genre": 1
+}
+
+###  REGISTRO PELICULA INCORRECTO 
+# Si el genero no existe, se devuelve un error 400 Bad Request
+ 
+
+POST http://localhost:8000/movies/
+Content-Type: application/json
+
+{
+    "title": "The tiger king",
+    "year": 1972,
+    "director": "Francis Ford Coppola",
+    "genre": "Crime",
+    "description": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+    "genre": 10
+}
+
+### REGISTRO PELICULA INCORRECTO 
+# Si tratamos de añadir una película ya existente, nos saltará un error 400 Bad Request
+# En este caso, la película "The Godfather" ya existe en la base de datos
+
+POST http://localhost:8000/movies/
+Content-Type: application/json
+
+{
+    "title": "The Godfather",
+    "year": 1972,
+    "director": "Francis Ford Coppola",
+    "genre": "Crime",
+    "description": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+    "genre": 1
+}
+
+### LISTADO DE PELICULAS 
+
+GET http://localhost:8000/movies/
+
+### DETALLE DE PELICULA 
+# se recomienda mirar el id de la película creada previamnete para poder visualizarla
+GET http://localhost:8000/movies/23/
+
+
+
+### LISTADO DE GENEROS
+
+GET http://localhost:8000/genres/
+
+
+### LISTA REVIEWS 
+
+GET http://localhost:8000/reviews/
+
+
+### REALIZAR REVIEW DE PELICULA
+
+# Vamos a realizar una review correcta con la cookie del usuario logueado
+# Si se prueba a enviar la review dos veces con el mismo usuario, saltará un error 409 Conflict
+# Ya que un usuario no puede hacer dos reviews de la misma película tal y como hemos indicado en la view
+# Cabe destacar que hay que mirar el id de la película creada previamente para poder realizar la review
+# El campo usuario puede tener el valor de cualquier usuario registrado , no obstante , la review se guardara 
+# con el id del usuario  con el que se haya iniciado sesión. 
+
+POST http://localhost:8000/reviews/
+Content-Type: application/json
+Cookie: session=108941064392edf94d13459dc6d38a3030f58d71
+
+{
+    "movie": 24,
+    "user": 5,
+    "rating": 5,
+    "review": "The best movie  444ever"
+}
+
+### REVIEW WITH ANOTHER USER
+
+# si queremos realizar una review con un usuario no logueado, nos saltará un error 401 Unauthorized
+
+
+POST http://localhost:8000/reviews/
+Content-Type: application/json
+Cookie: session=347c365e8ab5eb13a85673a86adf6dbdeb27f0fa
+
+{
+    "movie": 23,
+    "user": 7,
+    "rating": 5,
+    "review": "The best movie  444ever"
+}
+
+
+### ACTUALIZACION DE REVIEW 
+
+# Si deseamos actualizar una review realizada por un usuario que no sea 
+# el que ha iniciado sesión, nos saltará un error 401 Unauthorized
+# estamos con el usuario 5 , y vamos a intentar actualizar la review del usuario 9
+
+PUT http://localhost:8000/reviews/78/
+Content-Type: application/json
+Cookie: session=108941064392edf94d13459dc6d38a3030f58d71
+
+{
+    "movie": 24,
+    "user": 9,
+    "rating": 10,
+    "review": "The best movie ever"
+}
